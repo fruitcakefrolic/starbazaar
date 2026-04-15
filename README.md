@@ -1,11 +1,42 @@
-<div align="center">
+# Star Bazaar
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+A mythic marketplace for independent makers committed to sustainable materials and ethical labor. A world within Astraea House.
 
-  <h1>Built with AI Studio</h2>
+## Overview
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+Star Bazaar is a living market designed to provide an alternative to the extractive economy of disposable fashion. It is built on three core principles:
+1. **The maker is sacred.**
+2. **The material is honest.**
+3. **The money stays close.**
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+## Tech Stack
 
-</div>
+- **React 19**
+- **Vite**
+- **Tailwind CSS 4**
+- **Framer Motion** (for animations)
+- **Lucide React** (for iconography)
+- **React Router 7**
+
+## Development
+
+To run the project locally:
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+3. Build for production:
+   ```bash
+   npm run build
+   ```
+
+## Repository
+
+This project is connected to: [https://github.com/fruitcakefrolic/astraeahouse](https://github.com/fruitcakefrolic/astraeahouse)

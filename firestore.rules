@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: applications
+    // Document ID: auto-generated
+    // Fields:
+    //   - email: string (required, email format) - The applicant's email
+    //   - makerName: string (required) - Maker/brand name
+    //   - website: string (required) - Website URL
+    //   - socialHandle: string (optional) - Social handle
+    //   - createdAt: timestamp (required) - Submission time
+    //   - status: string (required, enum: ['pending', 'reviewed', 'accepted', 'declined']) - Application status
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "fruitcakefrolic@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidApplication(data) {
+      let validStatuses = ['pending', 'reviewed', 'accepted', 'declined'];
+      let requiredFields = ['email', 'makerName', 'website', 'createdAt', 'status'];
+      let allFields = ['email', 'makerName', 'website', 'socialHandle', 'createdAt', 'status'];
+      
+      return data.keys().hasAll(requiredFields) &&
+             data.keys().hasOnly(allFields) &&
+             isValidEmail(data.email) &&
+             data.email.size() < 256 &&
+             data.makerName is string &&
+             data.makerName.size() > 0 &&
+             data.makerName.size() < 256 &&
+             data.website is string &&
+             data.website.size() > 0 &&
+             data.website.size() < 512 &&
+             (!('socialHandle' in data) || (data.socialHandle == null || (data.socialHandle is string && data.socialHandle.size() < 128))) &&
+             data.createdAt is timestamp &&
+             data.status in validStatuses;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /applications/{applicationId} {
+      // Anyone can submit an application
+      allow create: if isValidApplication(request.resource.data) && 
+                      request.resource.data.status == 'pending' &&
+                      request.resource.data.createdAt <= request.time;
+      
+      // Only admins can read, update, or delete applications
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      // Only admins can create or update user roles
+      allow create, update: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
